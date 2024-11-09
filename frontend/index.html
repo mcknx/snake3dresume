@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Snake Game</title>
+    <style>
+        body { margin: 0; overflow: hidden; }
+        canvas { display: block; }
+    </style>
+</head>
+<body>
+    <h1>Welcome to the 3D Snake Game</h1>
+    <style>
+        #resume-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            color: white;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        #resume-content {
+            background-color: #333;
+            padding: 20px;
+            border-radius: 10px;
+            max-width: 600px;
+            overflow-y: auto;
+        }
+        #resume-content h2, #resume-content p {
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div id="resume-overlay">
+        <div id="resume-content">
+            <h2>McKeen Asma</h2>
+            <p><strong>Location:</strong> Davao City, Philippines</p>
+            <p><strong>Email:</strong> mcknasma@gmail.com</p>
+            <p><strong>Phone:</strong> +639323900204</p>
+            <h3>Summary</h3>
+            <p>Passionate about both technical and user experience aspects of app development. Skilled in animation, complex layouts, and open to learning 3D design. Experienced in using AI tools for development, including ChatGPT and Claude AI.</p>
+            <h3>Education</h3>
+            <p><strong>University of the Immaculate Conception</strong><br>June 2018 - June 2022 | Bachelor of Science in Information Technology</p>
+            <h3>Skills</h3>
+            <p>ReactJS, TailwindCSS, HTML5, CSS3, JavaScript, MongoDB, React Native, NodeJS, Rest API</p>
+            <h3>Experience</h3>
+            <p><strong>Full Stack Developer</strong> at Faithful Development (April 2024 - Present)</p>
+            <p><strong>Frontend Developer</strong> at Steelx Pty Ltd (November 2022 - April 2024)</p>
+            <p><strong>Frontend Developer</strong> at Tactiv Studios Design and Development (April 2022 - November 2022)</p>
+            <p><strong>Full Stack Web & Mobile Developer</strong> at WAL Software Solutions (April 2021 - April 2022)</p>
+        </div>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        // Basic Three.js setup
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        // Create the snake
+        const snake = [];
+        const snakeLength = 5;
+        const snakeMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+
+        for (let i = 0; i < snakeLength; i++) {
+            const segment = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.5, 0.5), snakeMaterial);
+            segment.position.x = -i * 0.5;
+            snake.push(segment);
+            scene.add(segment);
+        }
+
+        camera.position.z = 10;
+
+        // Create food
+        const foodGeometry = new THREE.SphereGeometry(0.25, 32, 32);
+        const foodMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+        const food = new THREE.Mesh(foodGeometry, foodMaterial);
+        scene.add(food);
+        placeFood();
+
+        function placeFood() {
+            food.position.x = Math.floor(Math.random() * 10) - 5;
+        // Toggle resume overlay
+        window.addEventListener('keydown', (event) => {
+            if (event.key === 'r' || event.key === 'R') {
+                const overlay = document.getElementById('resume-overlay');
+                overlay.style.display = overlay.style.display === 'flex' ? 'none' : 'flex';
+            }
+        });
+            food.position.y = Math.floor(Math.random() * 10) - 5;
+        }
+
+        // Snake movement
+        let direction = new THREE.Vector3(0.5, 0, 0);
+        let score = 0;
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            // Move the snake
+            for (let i = snake.length - 1; i > 0; i--) {
+                snake[i].position.copy(snake[i - 1].position);
+            }
+            snake[0].position.add(direction);
+
+            // Check for collision with food
+            if (snake[0].position.distanceTo(food.position) < 0.5) {
+                const newSegment = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.5, 0.5), snakeMaterial);
+                newSegment.position.copy(snake[snake.length - 1].position);
+                snake.push(newSegment);
+                scene.add(newSegment);
+                placeFood();
+                score += 10;
+                console.log('Score:', score);
+            }
+
+            // Check for collision with itself
+            for (let i = 1; i < snake.length; i++) {
+                if (snake[0].position.distanceTo(snake[i].position) < 0.1) {
+                    alert('Game Over! Your score: ' + score);
+                    window.location.reload();
+                }
+            }
+
+            // Check for collision with boundaries
+            if (Math.abs(snake[0].position.x) > 5 || Math.abs(snake[0].position.y) > 5) {
+                alert('Game Over! Your score: ' + score);
+                window.location.reload();
+            }
+
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        // Handle keyboard input
+        window.addEventListener('keydown', (event) => {
+            switch (event.key) {
+                case 'ArrowUp':
+                    direction.set(0, 0.5, 0);
+                    break;
+                case 'ArrowDown':
+                    direction.set(0, -0.5, 0);
+                    break;
+                case 'ArrowLeft':
+                    direction.set(-0.5, 0, 0);
+                    break;
+                case 'ArrowRight':
+                    direction.set(0.5, 0, 0);
+                    break;
+            }
+        });
+    </script>
+</body>
+</html>
